@@ -1,0 +1,73 @@
+services:
+    php:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        image: ${IMAGES_PREFIX:-}app-php
+        restart: unless-stopped
+        environment:
+            SERVER_NAME: ${SERVER_NAME:-localhost}, php:80
+            MERCURE_PUBLISHER_JWT_KEY: ${CADDY_MERCURE_JWT_SECRET:-!ChangeThisMercureHubJWTSecretKey!}
+            MERCURE_SUBSCRIBER_JWT_KEY: ${CADDY_MERCURE_JWT_SECRET:-!ChangeThisMercureHubJWTSecretKey!}
+            DATABASE_URL: postgresql://admin:admin@db:5432/main?serverVersion=17&charset=utf8
+            MERCURE_PUBLIC_URL: ${CADDY_MERCURE_PUBLIC_URL:-https://${SERVER_NAME:-localhost}/.well-known/mercure}
+            MERCURE_JWT_SECRET: ${CADDY_MERCURE_JWT_SECRET:-!ChangeThisMercureHubJWTSecretKey!}
+            SYMFONY_VERSION: ${SYMFONY_VERSION:-}
+            STABILITY: ${STABILITY:-stable}
+        volumes:
+            - caddy_data:/data
+            - caddy_config:/config
+            - /var/lib/php/sessions:/var/lib/php/sessions
+        ports:
+            -   target: 80
+                published: ${HTTP_PORT:-80}
+                protocol: tcp
+            -   target: 443
+                published: ${HTTPS_PORT:-443}
+                protocol: tcp
+            -   target: 443
+                published: ${HTTP3_PORT:-443}
+                protocol: udp
+    
+    db:
+        image: postgres:latest
+        container_name: postgres_container
+        restart: unless-stopped
+        environment:
+            POSTGRES_USER: admin
+            POSTGRES_PASSWORD: admin
+            POSTGRES_DB: main
+        ports:
+            - "5555:5432"
+        volumes:
+            - postgres_data:/var/lib/postgresql/data
+    
+    
+    ###> doctrine/doctrine-bundle ###
+    database:
+        image: postgres:${POSTGRES_VERSION:-16}-alpine
+        environment:
+            POSTGRES_DB: ${POSTGRES_DB:-app}
+            # You should definitely change the password in production
+            POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-!ChangeMe!}
+            POSTGRES_USER: ${POSTGRES_USER:-app}
+        healthcheck:
+            test: [ "CMD", "pg_isready", "-d", "${POSTGRES_DB:-app}", "-U", "${POSTGRES_USER:-app}" ]
+            timeout: 5s
+            retries: 5
+            start_period: 60s
+        volumes:
+            - database_data:/var/lib/postgresql/data:rw
+            # You may use a bind-mounted host directory instead, so that it is harder to accidentally remove the volume and lose all your data!
+            # - ./docker/db/data:/var/lib/postgresql/data:rw
+###< doctrine/doctrine-bundle ###
+
+volumes:
+    caddy_data:
+    caddy_config:
+    postgres_data:
+    php_sessions:
+    
+    ###> doctrine/doctrine-bundle ###
+    database_data:
+###< doctrine/doctrine-bundle ###
