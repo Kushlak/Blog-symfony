@@ -7,11 +7,11 @@ security:
         app_user_provider:
             entity:
                 class: App\Entity\User
-                property: email
+                property: username
     
     firewalls:
         login:
-            pattern: ^/api/login_check
+            pattern: ^/api/login
             stateless: true
             json_login:
                 check_path: /api/login_check

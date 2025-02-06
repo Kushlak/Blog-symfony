@@ -1,8 +1,3 @@
-controllers:
-    resource: ../src/Controller/
-    namespace: App\Controller
-    type: attribute
-
 api_login_check:
     path: /api/login_check
 
@@ -10,3 +5,28 @@ app_register:
     path: /register
     controller: App\Controller\RegistrationController::register
     methods: POST
+
+post_index:
+    path: /api/posts
+    controller: App\Controller\PostController::index
+    methods: [ 'GET' ]
+
+post_show:
+    path: /api/posts/{id}
+    controller: App\Controller\PostController::show
+    methods: [ 'GET' ]
+
+post_create:
+    path: /api/posts
+    controller: App\Controller\PostController::create
+    methods: [ 'POST' ]
+
+post_update:
+    path: /api/posts/{id}
+    controller: App\Controller\PostController::update
+    methods: [ 'PUT', 'PATCH' ]
+
+post_delete:
+    path: /api/posts/{id}
+    controller: App\Controller\PostController::delete
+    methods: [ 'DELETE' ]
