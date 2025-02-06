@@ -21,9 +21,6 @@ class User
     private ?string $username = null;
 
     #[ORM\Column(length: 17)]
-    private ?string $nickname = null;
-
-    #[ORM\Column(length: 17)]
     private ?string $firstName = null;
 
     #[ORM\Column(length: 17)]
@@ -67,16 +64,7 @@ class User
         return $this;
     }
 
-    public function getNickname(): ?string
-    {
-        return $this->nickname;
-    }
 
-    public function setNickname(string $nickname): static
-    {
-        $this->nickname = $nickname;
-        return $this;
-    }
 
     public function getFirstName(): ?string
     {
