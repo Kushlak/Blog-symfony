@@ -2,6 +2,7 @@
 
 namespace App\Repository;
 
+use App\Entity\Post;
 use App\Entity\PostKeyValueStore;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;

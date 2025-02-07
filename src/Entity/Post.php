@@ -9,6 +9,7 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use App\Enum\CategoryType;
 use Symfony\Component\Serializer\Annotation\Groups;
+use App\Entity\PostKeyValueStore;
 
 #[ORM\Entity(repositoryClass: PostRepository::class)]
 class Post
@@ -35,6 +36,10 @@ class Post
     #[Groups(['post:read', 'post:write'])]
     private ?CategoryType $type = null;
 
+    #[ORM\OneToMany(targetEntity: PostKeyValueStore::class, mappedBy: 'post', orphanRemoval: true)]
+    #[Groups(['post:read'])]
+    private Collection $postKeyValueStores;
+
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'posts')]
     #[ORM\JoinColumn(nullable: false)]
     #[Groups(['post:read'])]
@@ -47,6 +52,7 @@ class Post
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
+        $this->postKeyValueStores = new ArrayCollection();
         $this->comments = new ArrayCollection();
     }
 
@@ -134,6 +140,36 @@ class Post
             // set the owning side to null (unless already changed)
             if ($comment->getPost() === $this) {
                 $comment->setPost(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, PostKeyValueStore>
+     */
+    public function getPostKeyValueStores(): Collection
+    {
+        return $this->postKeyValueStores;
+    }
+
+    public function addPostKeyValueStore(PostKeyValueStore $postKeyValueStore): static
+    {
+        if (!$this->postKeyValueStores->contains($postKeyValueStore)) {
+            $this->postKeyValueStores->add($postKeyValueStore);
+            $postKeyValueStore->setPost($this);
+        }
+
+        return $this;
+    }
+
+    public function removePostKeyValueStore(PostKeyValueStore $postKeyValueStore): static
+    {
+        if ($this->postKeyValueStores->removeElement($postKeyValueStore)) {
+            // set the owning side to null (unless already changed)
+            if ($postKeyValueStore->getPost() === $this) {
+                $postKeyValueStore->setPost(null);
             }
         }
 

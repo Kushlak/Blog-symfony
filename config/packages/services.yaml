@@ -20,4 +20,8 @@ services:
         arguments: [ '@doctrine.orm.entity_manager' ]
         tags: [ 'serializer.normalizer' ]
 
- 
+    App\Service\PostService:
+        arguments:
+            $entityManager: '@doctrine.orm.entity_manager'
+            $postRepository: '@App\Repository\PostRepository'
+            $serializer: '@serializer'
