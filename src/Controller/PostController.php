@@ -4,43 +4,41 @@ namespace App\Controller;
 
 use App\Entity\Post;
 use App\Enum\CategoryType;
-use App\Formatter\PostFormatter;
-use App\Repository\PostRepository;
+use App\Repository\PostRяяepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\Serializer\SerializerInterface; // Додайте це
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 class PostController extends AbstractController
 {
-// List all posts
+    // Отримати всі пости
     #[Route('/api/posts', name: 'api_posts_index', methods: ['GET'])]
-    public function index(PostRepository $postRepository, PostFormatter $postFormatter): JsonResponse
+    public function index(PostRepository $postRepository, SerializerInterface $serializer): JsonResponse
     {
         $posts = $postRepository->findAll();
 
-        $formattedPosts = array_map(
-            fn(Post $post) => $postFormatter->format($post),
-            $posts
-        );
+        // Серіалізуємо пости
+        $jsonData = $serializer->serialize($posts, 'json');
 
-        return new JsonResponse($formattedPosts, Response::HTTP_OK);
+        return new JsonResponse($jsonData, Response::HTTP_OK, [], true);
     }
 
-// Show a single post
+    // Показати один пост
     #[Route('/api/posts/{id}', name: 'api_posts_show', methods: ['GET'])]
-    public function show(Post $post, PostFormatter $postFormatter): JsonResponse
+    public function show(Post $post, SerializerInterface $serializer): JsonResponse
     {
-        $formattedPost = $postFormatter->format($post);
+        $jsonData = $serializer->serialize($post, 'json');
 
-        return new JsonResponse($formattedPost, Response::HTTP_OK);
+        return new JsonResponse($jsonData, Response::HTTP_OK, [], true);
     }
 
-// Create a new post
+    // Створити новий пост
     #[Route('/api/posts', name: 'api_posts_create', methods: ['POST'])]
-    public function create(Request $request, EntityManagerInterface $em, PostFormatter $postFormatter): JsonResponse
+    public function create(Request $request, EntityManagerInterface $em, SerializerInterface $serializer): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
 
@@ -58,14 +56,15 @@ class PostController extends AbstractController
         $em->persist($post);
         $em->flush();
 
-        $formattedPost = $postFormatter->format($post);
+        $jsonData = $serializer->serialize($post, 'json');
 
-        return new JsonResponse($formattedPost, Response::HTTP_CREATED);
+
+        return new JsonResponse($jsonData, Response::HTTP_CREATED, [], true);
     }
 
-// Update an existing post
+    // Оновити існуючий пост
     #[Route('/api/posts/{id}', name: 'api_posts_update', methods: ['PUT', 'PATCH'])]
-    public function update(Request $request, Post $post, EntityManagerInterface $em, PostFormatter $postFormatter): JsonResponse
+    public function update(Request $request, Post $post, EntityManagerInterface $em, SerializerInterface $serializer): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
 
@@ -77,12 +76,12 @@ class PostController extends AbstractController
 
         $em->flush();
 
-        $formattedPost = $postFormatter->format($post);
+        $jsonData = $serializer->serialize($post, 'json');
 
-        return new JsonResponse($formattedPost, Response::HTTP_OK);
+        return new JsonResponse($jsonData, Response::HTTP_OK, [], true);
     }
 
-// Delete a post
+    // Видалити пост
     #[Route('/api/posts/{id}', name: 'api_posts_delete', methods: ['DELETE'])]
     public function delete(Post $post, EntityManagerInterface $em): JsonResponse
     {
@@ -92,3 +91,4 @@ class PostController extends AbstractController
         return new JsonResponse(null, Response::HTTP_NO_CONTENT);
     }
 }
+
