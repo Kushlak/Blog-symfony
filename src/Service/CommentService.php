@@ -3,21 +3,40 @@
 namespace App\Service;
 
 use App\Entity\Comment;
+use App\Entity\Post;
 use App\Entity\User;
 use App\Repository\CommentRepository;
-use App\Transformer\CommentTransformer;
+use App\Repository\PostRepository;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\Serializer\SerializerInterface;
 
 class CommentService
 {
     private CommentRepository $commentRepository;
-    private CommentTransformer $commentTransformer;
+    private PostRepository $postRepository;
+    private EntityManagerInterface $entityManager;
+    private SerializerInterface $serializer;
 
     public function __construct(
         CommentRepository $commentRepository,
-        CommentTransformer $commentTransformer
+        PostRepository $postRepository,
+        EntityManagerInterface $entityManager,
+        SerializerInterface $serializer
     ) {
         $this->commentRepository = $commentRepository;
-        $this->commentTransformer = $commentTransformer;
+        $this->postRepository = $postRepository;
+        $this->entityManager = $entityManager;
+        $this->serializer = $serializer;
+    }
+
+    public function getCommentsByPost(int $postId): array
+    {
+        return $this->commentRepository->findCommentsByPost($postId);
+    }
+
+    public function getComment(int $id): ?Comment
+    {
+        return $this->commentRepository->findCommentById($id);
     }
 
     public function saveComment(Comment $comment): void
@@ -30,23 +49,40 @@ class CommentService
         $this->commentRepository->delete($comment);
     }
 
-    public function getComment(int $id): ?Comment
+    public function createComment(User $user, int $postId, string $content): Comment
     {
-        return $this->commentRepository->findCommentById($id);
+        $post = $this->postRepository->find($postId);
+        if (!$post) {
+            throw new \InvalidArgumentException('Post not found');
+        }
+
+        $comment = new Comment();
+        $comment->setContent($content);
+        $comment->setAuthor($user);
+        $comment->setPost($post);
+
+        $this->saveComment($comment);
+
+        return $comment;
     }
 
-    public function getCommentsByPost(int $postId): array
+    public function updateComment(User $user, int $id, array $data): Comment
     {
-        return $this->commentRepository->findCommentsByPost($postId);
-    }
+        $comment = $this->commentRepository->find($id);
+        if (!$comment) {
+            throw new \InvalidArgumentException('Comment not found');
+        }
 
-    public function transformComment(Comment $comment): array
-    {
-        return $this->commentTransformer->transform($comment);
-    }
+        if ($comment->getAuthor()->getId() !== $user->getId()) {
+            throw new \InvalidArgumentException('Unauthorized');
+        }
 
-    public function reverseTransformComment(array $data, Comment $comment): Comment
-    {
-        return $this->commentTransformer->reverseTransform($data, $comment);
+        if (isset($data['content'])) {
+            $comment->setContent($data['content']);
+        }
+
+        $this->saveComment($comment);
+
+        return $comment;
     }
 }

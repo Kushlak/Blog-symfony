@@ -21,7 +21,7 @@ post_create:
     path: /api/posts
     controller: App\Controller\PostController::create
     methods: [ 'POST' ]
-
+#got it
 post_update:
     path: /api/posts/{id}
     controller: App\Controller\PostController::update
@@ -70,6 +70,6 @@ api_posts_get_key_value_stores:
     methods: GET
     
 api_posts_delete_key_value_store:
-    path: /api/posts/{postId}/key_value_stores/{storeId}
+    path: /api/posts/{postId}/key_value_stores/{id}
     controller: App\Controller\PostController::deleteKeyValueStore
     methods: DELETE

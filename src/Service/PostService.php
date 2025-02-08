@@ -3,6 +3,7 @@
 namespace App\Service;
 
 use App\Entity\Post;
+use App\Entity\User;
 use App\Entity\PostKeyValueStore;
 use App\Enum\CategoryType;
 use App\Repository\PostRepository;
@@ -34,7 +35,7 @@ class PostService
         return $this->serializer->serialize($post, 'json');
     }
 
-    public function createPost(Request $request): string
+    public function createPost(Request $request, User $user): string
     {
         $data = json_decode($request->getContent(), true);
 
@@ -46,8 +47,7 @@ class PostService
         $post->setTitle($data['title']);
         $post->setContent($data['content']);
         $post->setType(CategoryType::from($data['type']));
-        //пошукати інфу щодо гет юзер
-        $post->setAuthor($request->getUser());
+        $post->setAuthor($user); // Встановлюємо користувача
         $post->setCreatedAt(new \DateTimeImmutable());
 
         $this->entityManager->persist($post);
@@ -109,7 +109,7 @@ class PostService
 
     public function getAllPostKeyValueStores(Post $post): string
     {
-        $postKeyValueStores = $post->getPostKeyValueStores(); // Assuming you have a method in Post entity to get the stores
+        $postKeyValueStores = $post->getPostKeyValueStores();
         return $this->serializer->serialize($postKeyValueStores, 'json');
     }
 }

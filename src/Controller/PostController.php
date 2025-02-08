@@ -10,17 +10,14 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Serializer\SerializerInterface;
 
 class PostController extends AbstractController
 {
     private $postService;
-    private $serializer;
 
-    public function __construct(PostService $postService, SerializerInterface $serializer)
+    public function __construct(PostService $postService)
     {
         $this->postService = $postService;
-        $this->serializer = $serializer;
     }
 
     #[Route('/api/posts', name: 'api_posts_index', methods: ['GET'])]
@@ -41,7 +38,12 @@ class PostController extends AbstractController
     public function create(Request $request): JsonResponse
     {
         try {
-            $jsonData = $this->postService->createPost($request);
+            $user = $this->getUser(); // Отримуємо поточного користувача
+            if (!$user) {
+                return new JsonResponse(['error' => 'User not authenticated'], Response::HTTP_UNAUTHORIZED);
+            }
+
+            $jsonData = $this->postService->createPost($request, $user); // Передаємо користувача в сервіс
             return new JsonResponse($jsonData, Response::HTTP_CREATED, [], true);
         } catch (\InvalidArgumentException $e) {
             return new JsonResponse(['error' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
@@ -80,7 +82,7 @@ class PostController extends AbstractController
         return new JsonResponse($jsonData, Response::HTTP_OK, [], true);
     }
 
-    #[Route('/api/posts/{postId}/key_value_stores/{storeId}', name: 'api_posts_delete_key_value_store', methods: ['DELETE'])]
+    #[Route('/api/posts/{postId}/key_value_stores/{id}', name: 'api_posts_delete_key_value_store', methods: ['DELETE'])]
     public function deleteKeyValueStore(PostKeyValueStore $postKeyValueStore): JsonResponse
     {
         $this->postService->deletePostKeyValueStore($postKeyValueStore);

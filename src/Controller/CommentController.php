@@ -19,9 +19,10 @@ class CommentController extends AbstractController
     private SerializerInterface $serializer;
 
     public function __construct(
-        CommentService $commentService,
+        CommentService      $commentService,
         SerializerInterface $serializer
-    ) {
+    )
+    {
         $this->commentService = $commentService;
         $this->serializer = $serializer;
     }
@@ -30,13 +31,7 @@ class CommentController extends AbstractController
     public function getCommentsByPost(int $postId): JsonResponse
     {
         $comments = $this->commentService->getCommentsByPost($postId);
-
-        $jsonContent = $this->serializer->serialize(
-            $comments,
-            'json',
-            ['groups' => 'comment:read']
-        );
-
+        $jsonContent = $this->serializer->serialize($comments, 'json', ['groups' => 'comment:read']);
         return new JsonResponse($jsonContent, Response::HTTP_OK, [], true);
     }
 
@@ -44,17 +39,10 @@ class CommentController extends AbstractController
     public function getComment(int $id): JsonResponse
     {
         $comment = $this->commentService->getComment($id);
-
         if (!$comment) {
             return new JsonResponse(['message' => 'Comment not found'], Response::HTTP_NOT_FOUND);
         }
-
-        $jsonContent = $this->serializer->serialize(
-            $comment,
-            'json',
-            ['groups' => 'comment:read']
-        );
-
+        $jsonContent = $this->serializer->serialize($comment, 'json', ['groups' => 'comment:read']);
         return new JsonResponse($jsonContent, Response::HTTP_OK, [], true);
     }
 
@@ -62,33 +50,13 @@ class CommentController extends AbstractController
     public function createComment(int $postId, Request $request): JsonResponse
     {
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
-
-        /** @var User $user */
-        $user = $this->getUser();
-
-        $post = $this->getDoctrine()->getRepository(Post::class)->find($postId);
-        if (!$post) {
-            return new JsonResponse(['message' => 'Post not found'], Response::HTTP_NOT_FOUND);
-        }
-
         $data = json_decode($request->getContent(), true);
         if (!isset($data['content'])) {
             return new JsonResponse(['message' => 'Content is required'], Response::HTTP_BAD_REQUEST);
         }
-
-        $comment = new Comment();
-        $comment->setContent($data['content']);
-        $comment->setAuthor($user);
-        $comment->setPost($post);
-
-        $this->commentService->saveComment($comment);
-
-        $jsonContent = $this->serializer->serialize(
-            $comment,
-            'json',
-            ['groups' => 'comment:read']
-        );
-
+        $user = $this->getUser();
+        $comment = $this->commentService->createComment($user, $postId, $data['content']);
+        $jsonContent = $this->serializer->serialize($comment, 'json', ['groups' => 'comment:read']);
         return new JsonResponse($jsonContent, Response::HTTP_CREATED, [], true);
     }
 
@@ -96,52 +64,27 @@ class CommentController extends AbstractController
     public function updateComment(int $id, Request $request): JsonResponse
     {
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
-
-        /** @var User $user */
         $user = $this->getUser();
-
-        $comment = $this->commentService->getComment($id);
-        if (!$comment) {
-            return new JsonResponse(['message' => 'Comment not found'], Response::HTTP_NOT_FOUND);
-        }
-
-        if ($comment->getAuthor()->getId() !== $user->getId()) {
-            return new JsonResponse(['message' => 'Unauthorized'], Response::HTTP_FORBIDDEN);
-        }
-
         $data = json_decode($request->getContent(), true);
-        $comment = $this->commentService->reverseTransformComment($data, $comment);
-
-        $this->commentService->saveComment($comment);
-
-        $jsonContent = $this->serializer->serialize(
-            $comment,
-            'json',
-            ['groups' => 'comment:read']
-        );
-
-        return new JsonResponse($jsonContent, Response::HTTP_OK, [], true);
+        try {
+            $comment = $this->commentService->updateComment($user, $id, $data);
+            $jsonContent = $this->serializer->serialize($comment, 'json', ['groups' => 'comment:read']);
+            return new JsonResponse($jsonContent, Response::HTTP_OK, [], true);
+        } catch (\InvalidArgumentException $e) {
+            return new JsonResponse(['message' => $e->getMessage()], $e->getCode());
+        }
     }
 
     #[Route('/api/comments/{id}', name: 'api_delete_comment', methods: ['DELETE'])]
-    public function deleteComment(int $id): JsonResponse
+    public function deleteComment(Comment $id): JsonResponse
     {
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
-
-        /** @var User $user */
         $user = $this->getUser();
-
-        $comment = $this->commentService->getComment($id);
-        if (!$comment) {
-            return new JsonResponse(['message' => 'Comment not found'], Response::HTTP_NOT_FOUND);
+        try {
+            $this->commentService->deleteComment( $id);
+            return new JsonResponse(['message' => 'Comment deleted'], Response::HTTP_NO_CONTENT);
+        } catch (\InvalidArgumentException $e) {
+            return new JsonResponse(['message' => $e->getMessage()], $e->getCode());
         }
-
-        if ($comment->getAuthor()->getId() !== $user->getId() && !$this->isGranted('ROLE_ADMIN')) {
-            return new JsonResponse(['message' => 'Unauthorized'], Response::HTTP_FORBIDDEN);
-        }
-
-        $this->commentService->deleteComment($comment);
-
-        return new JsonResponse(['message' => 'Comment deleted'], Response::HTTP_NO_CONTENT);
     }
 }
