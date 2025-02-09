@@ -14,4 +14,6 @@ enum CategoryType: string {
     case ENTERTAINMENT  = 'entertainment';
     case BUSINESS = 'business';
     case DIARY = 'diary';
+    case BLOG = 'blog';
+    case TUTORIAL = 'tutorial';
 }

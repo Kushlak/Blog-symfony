@@ -3,7 +3,6 @@
 namespace App\Service;
 
 use App\Entity\Comment;
-use App\Entity\Post;
 use App\Entity\User;
 use App\Repository\CommentRepository;
 use App\Repository\PostRepository;
