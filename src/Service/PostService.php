@@ -107,9 +107,9 @@ class PostService
         return $this->serializer->serialize($postKeyValueStore, 'json');
     }
 
-    public function getAllPostKeyValueStores(Post $post): string
+    public function getAllPostKeyValueStores(Post $post): array
     {
         $postKeyValueStores = $post->getPostKeyValueStores();
-        return $this->serializer->serialize($postKeyValueStores, 'json');
-    }
+        return $this->entityManager->getRepository(PostKeyValueStore::class)->findBy(['post' => $post]);
+            }
 }

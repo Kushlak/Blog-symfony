@@ -15,6 +15,9 @@ services:
         resource: '../../src/*'
         exclude: '../../src/{DependencyInjection,Entity,Tests,Kernel.php}'
     
+    App\Twig\AppExtension:
+        tags: ['twig.extension']
+    
     App\Serializer\CircularReferenceHandler:
         class: App\Serializer\CircularReferenceHandler
         arguments: [ '@doctrine.orm.entity_manager' ]

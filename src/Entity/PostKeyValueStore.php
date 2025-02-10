@@ -27,7 +27,7 @@ class PostKeyValueStore
     // Constructor
     public function __construct()
     {
-        // Initialize any collections or default values if needed
+
     }
 
     // Getter and Setter for Id

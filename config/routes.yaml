@@ -1,53 +1,64 @@
-#got it
+# Existing routes for API endpoints
+
+# Routes for UserController
+api_admin_user_index:
+    path: /api/admin/users
+    controller: App\Controller\UserController::index
+    methods: [GET]
+
+api_admin_user_create:
+    path: /api/admin/users/create
+    controller: App\Controller\UserController::create
+    methods: [POST]
+
+# Other existing routes
 api_login_check:
     path: /api/login_check
-#got it
+
 app_register:
     path: /register
     controller: App\Controller\RegistrationController::register
-    methods: POST
-#якщо це ендпоінт - то є
+    methods: [POST]
+
 post_index:
     path: /api/posts
     controller: App\Controller\PostController::index
-    methods: [ 'GET' ]
+    methods: [GET]
 
 post_show:
     path: /api/posts/{id}
     controller: App\Controller\PostController::show
-    methods: [ 'GET' ]
-#є
+    methods: [GET]
+
 post_create:
     path: /api/posts
     controller: App\Controller\PostController::create
-    methods: [ 'POST' ]
-#got it
+    methods: [POST]
+
 post_update:
     path: /api/posts/{id}
     controller: App\Controller\PostController::update
-    methods: [ 'PUT', 'PATCH' ]
-#є
+    methods: [PUT, PATCH]
+
 post_delete:
     path: /api/posts/{id}
     controller: App\Controller\PostController::delete
-    methods: [ 'DELETE' ]
+    methods: [DELETE]
 
-
-# Routes for CommentController
 comment_get_comments_by_post:
     path: /api/posts/{postId}/comments
     controller: App\Controller\CommentController::getCommentsByPost
-    methods: GET
+    methods: [GET]
 
 comment_get_comment:
     path: /api/comments/{id}
     controller: App\Controller\CommentController::getComment
-    methods: GET
+    methods: [GET]
 
 comment_create_comment:
     path: /api/posts/{postId}/comments
     controller: App\Controller\CommentController::createComment
-    methods: POST
+    methods: [POST]
 
 comment_update_comment:
     path: /api/comments/{id}
@@ -57,19 +68,111 @@ comment_update_comment:
 comment_delete_comment:
     path: /api/comments/{id}
     controller: App\Controller\CommentController::deleteComment
-    methods: DELETE
-    
+    methods: [DELETE]
+
 api_posts_add_key_value_store:
     path: /api/posts/{id}/key_value_stores
     controller: App\Controller\PostController::addKeyValueStore
-    methods: POST
-    
+    methods: [POST]
+
 api_posts_get_key_value_stores:
     path: /api/posts/{id}/key_value_stores
-    controller: App\Controller\PostController::getKeyValueStore
-    methods: GET
-    
+    controller: App\Controller\PostController::getKeyValueStores
+    methods: [GET]
+
 api_posts_delete_key_value_store:
     path: /api/posts/{postId}/key_value_stores/{id}
-    controller: App\Controller\PostController::deleteKeyValueStore
-    methods: DELETE
+    controller: App\Controller\PostController::deleteKeyValueStores
+    methods: [DELETE]
+
+# New routes for Twig templates
+get_post_comments:
+    path: /posts/{postId}/comments
+    controller: App\Controller\CommentTemplateController::getCommentsByPost
+    requirements:
+        postId: '\d+'
+
+get_comment:
+    path: /comments/{id}
+    controller: App\Controller\CommentTemplateController::getComment
+    requirements:
+        id: '\d+'
+
+create_comment:
+    path: /posts/{postId}/comments
+    controller: App\Controller\CommentTemplateController::createComment
+    methods: [POST]
+    requirements:
+        postId: '\d+'
+
+update_comment:
+    path: /comments/{id}
+    controller: App\Controller\CommentTemplateController::updateComment
+    methods: [PUT, PATCH]
+    requirements:
+        id: '\d+'
+
+delete_comment:
+    path: /comments/{id}
+    controller: App\Controller\CommentTemplateController::deleteComment
+    methods: [DELETE]
+    requirements:
+        id: '\d+'
+
+posts_index:
+    path: /posts
+    controller: App\Controller\PostTemplateController::index
+    methods: [GET]
+
+posts_show:
+    path: /posts/{id}
+    controller: App\Controller\PostTemplateController::show
+    methods: [GET]
+    requirements:
+        id: '\d+'
+
+posts_create:
+    path: /posts
+    controller: App\Controller\PostTemplateController::create
+    methods: [POST]
+
+posts_update:
+    path: /posts/{id}
+    controller: App\Controller\PostTemplateController::update
+    methods: [PUT, PATCH]
+    requirements:
+        id: '\d+'
+
+posts_delete:
+    path: /posts/{id}
+    controller: App\Controller\PostTemplateController::delete
+    methods: [DELETE]
+    requirements:
+        id: '\d+'
+
+posts_add_key_value_store:
+    path: /posts/{id}/key_value_stores
+    controller: App\Controller\PostTemplateController::addKeyValueStore
+    methods: [POST]
+    requirements:
+        id: '\d+'
+
+posts_get_key_value_stores:
+    path: /posts/{id}/key_value_stores
+    controller: App\Controller\PostTemplateController::getKeyValueStores
+    methods: [GET]
+    requirements:
+        id: '\d+'
+
+posts_delete_key_value_store:
+    path: /posts/{postId}/key_value_stores/{id}
+    controller: App\Controller\PostTemplateController::deleteKeyValueStore
+    methods: [DELETE]
+    requirements:
+        postId: '\d+'
+        id: '\d+'
+
+register:
+    path: /register
+    controller: App\Controller\RegistrationTemplateController::register
+    methods: [GET, POST]

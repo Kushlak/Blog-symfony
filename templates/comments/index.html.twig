@@ -1,0 +1,12 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Comments{% endblock %}
+
+{% block body %}
+    <h1>Comments</h1>
+    <ul>
+        {% for comment in comments %}
+            <li>{{ comment.content }} by {{ comment.author.username }}</li>
+        {% endfor %}
+    </ul>
+{% endblock %}

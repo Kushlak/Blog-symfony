@@ -1,0 +1,12 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Key Value Stores{% endblock %}
+
+{% block body %}
+    <h1>Key Value Stores</h1>
+    <ul>
+        {% for kv in key_value_stores %}
+            <li>{{ kv.key }}: {{ kv.value }}</li>
+        {% endfor %}
+    </ul>
+{% endblock %}

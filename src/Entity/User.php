@@ -10,10 +10,13 @@ use DateTimeImmutable;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 
+
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: '`user`')]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
+    #[ORM\Column(type: 'json')]
+    private array $roles = [];
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -50,6 +53,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->comments = new ArrayCollection();
     }
 
+    public function getRoles(): array { // guarantee every user at least has ROLE_USER $roles = $this->roles; $roles[] = 'ROLE_USER';
+        $roles[] = 'ROLE_USER';
+        return array_unique($roles); }
+    public function setRoles(array $roles): self { $this->roles = $roles;
+        return $this; }
     public function getId(): ?int
     {
         return $this->id;
@@ -174,11 +182,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         }
 
         return $this;
-    }
-
-    public function getRoles(): array
-    {
-        return ['ROLE_USER'];
     }
 
     // Required by UserInterface
