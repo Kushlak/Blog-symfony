@@ -83,7 +83,7 @@ class PostController extends AbstractController
     }
 
     #[Route('/api/posts/{postId}/key_value_stores/{id}', name: 'api_posts_delete_key_value_store', methods: ['DELETE'])]
-    public function deleteKeyValueStore(PostKeyValueStore $postKeyValueStore): JsonResponse
+    public function deleteKeyValueStores(PostKeyValueStore $postKeyValueStore): JsonResponse
     {
         $this->postService->deletePostKeyValueStore($postKeyValueStore);
         return new JsonResponse(null, Response::HTTP_NO_CONTENT);

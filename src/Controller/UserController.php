@@ -38,7 +38,8 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
         $username = $data['username'];
         $password = $data['password'];
         $roles = $data['roles'] ?? ['ROLE_USER'];
-// Password hashing $hashedPassword = $this->passwordHasher->hashPassword(new User(), $password);
+// Password hashing
+        $hashedPassword = $this->passwordHasher->hashPassword(new User(), $password);
         $user = $this->userService->createUser($username, $hashedPassword, $roles);
         $responseData = $this->serializer->serialize($user, 'json');
         return new JsonResponse($responseData, 201, [], true);

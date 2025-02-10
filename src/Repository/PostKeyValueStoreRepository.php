@@ -2,10 +2,10 @@
 
 namespace App\Repository;
 
-use App\Entity\Post;
 use App\Entity\PostKeyValueStore;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use Doctrine\ORM\EntityManagerInterface;
 
 /**
  * @extends ServiceEntityRepository<PostKeyValueStore>
@@ -17,63 +17,23 @@ use Doctrine\Persistence\ManagerRegistry;
  */
 class PostKeyValueStoreRepository extends ServiceEntityRepository
 {
-    public function __construct(ManagerRegistry $registry)
+    private $entityManager;
+
+    public function __construct(ManagerRegistry $registry, EntityManagerInterface $entityManager)
     {
         parent::__construct($registry, PostKeyValueStore::class);
+        $this->entityManager = $entityManager;
     }
 
-    /**
-     * Save a PostKeyValueStore entity.
-     *
-     * @param PostKeyValueStore $entity
-     * @param bool $flush
-     */
-    public function save(PostKeyValueStore $entity, bool $flush = false): void
+    public function save(PostKeyValueStore $postKeyValueStore): void
     {
-        $this->getEntityManager()->persist($entity);
-
-        if ($flush) {
-            $this->getEntityManager()->flush();
-        }
+        $this->entityManager->persist($postKeyValueStore);
+        $this->entityManager->flush();
     }
 
-    /**
-     * Remove a PostKeyValueStore entity.
-     *
-     * @param PostKeyValueStore $entity
-     * @param bool $flush
-     */
-    public function remove(PostKeyValueStore $entity, bool $flush = false): void
+    public function remove(PostKeyValueStore $postKeyValueStore): void
     {
-        $this->getEntityManager()->remove($entity);
-
-        if ($flush) {
-            $this->getEntityManager()->flush();
-        }
-    }
-
-    // Add your custom repository methods below
-
-    /**
-     * Find key-value pairs by post.
-     *
-     * @param Post $post
-     * @return PostKeyValueStore[]
-     */
-    public function findByPost(Post $post): array
-    {
-        return $this->findBy(['post' => $post]);
-    }
-
-    /**
-     * Find a key-value pair by post and key.
-     *
-     * @param Post $post
-     * @param string $key
-     * @return PostKeyValueStore|null
-     */
-    public function findOneByPostAndKey(Post $post, string $key): ?PostKeyValueStore
-    {
-        return $this->findOneBy(['post' => $post, 'key' => $key]);
+        $this->entityManager->remove($postKeyValueStore);
+        $this->entityManager->flush();
     }
 }

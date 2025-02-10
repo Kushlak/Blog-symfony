@@ -3,7 +3,6 @@
 
 namespace App\Form;
 
-use App\Entity\Category;
 use App\Enum\CategoryType as CategoryEnumType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\EnumType;
@@ -24,7 +23,7 @@ class CategoryType extends AbstractType
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
-            'data_class' => Category::class,
+
         ]);
     }
 }

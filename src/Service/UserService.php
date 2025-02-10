@@ -4,24 +4,23 @@ namespace App\Service;
 
 use App\Entity\User;
 use App\Repository\UserRepository;
-use Doctrine\ORM\EntityManagerInterface;
 
 class UserService
 {
     private UserRepository $userRepository;
-    private EntityManagerInterface $entityManager;
 
-    public function __construct(UserRepository $userRepository, EntityManagerInterface $entityManager)
+    public function __construct(UserRepository $userRepository)
     {
         $this->userRepository = $userRepository;
-        $this->entityManager = $entityManager;
     }
 
     public function createUser(string $username, string $password, array $roles): User
     {
         $user = new User();
         $user->setUsername($username)->setPassword($password)->setRoles($roles);
-// Persist user to the database $this->entityManager->persist($user); $this->entityManager->flush();
+
+        $this->userRepository->save($user);
+
         return $user;
     }
 
@@ -32,6 +31,11 @@ class UserService
 
     public function updateUser(User $user): void
     {
-        $this->entityManager->flush();
+        $this->userRepository->save($user);
+    }
+
+    public function getAllUsers()
+    {
+        $users = $this->userRepository->findAll();
     }
 }
