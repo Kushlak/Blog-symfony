@@ -111,5 +111,34 @@ class PostService
     {
         $postKeyValueStores = $post->getPostKeyValueStores();
         return $this->entityManager->getRepository(PostKeyValueStore::class)->findBy(['post' => $post]);
-            }
+    }
+
+    public function createPostWithForm(User $user, Post $post): void
+    {
+        $post->setAuthor($user);
+        $post->setCreatedAt(new \DateTimeImmutable());
+
+        $this->entityManager->persist($post);
+        $this->entityManager->flush();
+    }
+
+
+    public function updatePostFromForm(Post $post): void
+    {
+        // Обновлення даних посту
+        if ($post->getTitle() === null || trim($post->getTitle()) === '') {
+            throw new \InvalidArgumentException('Title cannot be empty');
+        }
+
+        if ($post->getContent() === null || trim($post->getContent()) === '') {
+            throw new \InvalidArgumentException('Content cannot be empty');
+        }
+
+        if ($post->getType() === null) {
+            throw new \InvalidArgumentException('Type cannot be null');
+        }
+
+        $this->entityManager->flush();
+    }
+
 }

@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Comment;
 use App\Service\CommentService;
+use App\Form\CommentType;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -18,55 +19,43 @@ class CommentTemplateController extends AbstractController
         $this->commentService = $commentService;
     }
 
-    #[Route('/posts/{postId}/comments', name: 'get_post_comments', methods: ['GET'])]
-    public function getCommentsByPost(int $postId): Response
-    {
-        $comments = $this->commentService->getCommentsByPost($postId);
-        return $this->render('comments/index.html.twig', [
-            'comments' => $comments,
-        ]);
-    }
-
-    #[Route('/comments/{id}', name: 'get_comment', methods: ['GET'])]
-    public function getComment(int $id): Response
-    {
-        $comment = $this->commentService->getComment($id);
-        if (!$comment) {
-            throw $this->createNotFoundException('Comment not found');
-        }
-        return $this->render('comments/show.html.twig', [
-            'comment' => $comment,
-        ]);
-    }
-
     #[Route('/posts/{postId}/comments', name: 'create_comment', methods: ['POST'])]
     public function createComment(Request $request, int $postId): Response
     {
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
-        $data = $request->request->all();
-        if (!isset($data['content'])) {
-            return new Response('Content is required', Response::HTTP_BAD_REQUEST);
+        $comment = new Comment();
+        $form = $this->createForm(CommentType::class, $comment);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $user = $this->getUser();
+            $this->commentService->createComment($user, $postId, $comment->getContent());
+            return $this->redirectToRoute('get_post_comments', ['postId' => $postId]);
         }
-        $user = $this->getUser();
-        $comment = $this->commentService->createComment($user, $postId, $data['content']);
-        return $this->redirectToRoute('get_post_comments', ['postId' => $postId]);
+
+        return $this->render('comments/create.html.twig', [
+            'form' => $form->createView(),
+        ]);
     }
+
     #[Route('/comments/{id}', name: 'update_comment', methods: ['PUT', 'PATCH'])]
     public function updateComment(Request $request, int $id): Response
     {
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
-        $user = $this->getUser();
-        $data = $request->request->all();
-        try {
-            $comment = $this->commentService->updateComment($user, $id, $data);
+        $comment = $this->commentService->getComment($id);
+        $form = $this->createForm(CommentType::class, $comment);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $user = $this->getUser();
+            $this->commentService->updateComment($user, $id, ['content'=>$comment->getContent()]);
             return $this->redirectToRoute('get_comment', ['id' => $id]);
-        } catch (\InvalidArgumentException $e) {
-            return new Response($e->getMessage(), Response::HTTP_BAD_REQUEST);
         }
+
+        return $this->render('comments/update.html.twig', [
+            'form' => $form->createView(),
+        ]);
     }
-
-
-
 
     #[Route('/comments/{id}', name: 'delete_comment', methods: ['DELETE'])]
     public function deleteComment(Comment $id): Response

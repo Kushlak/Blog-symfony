@@ -9,44 +9,40 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Annotation\Route;
+use App\Form\RegistrationType;
 
 class RegistrationTemplateController extends AbstractController
 {
     #[Route('/register', name: 'register', methods: ['GET', 'POST'])]
     public function register(Request $request, UserPasswordHasherInterface $passwordHasher, EntityManagerInterface $entityManager): Response
     {
-        if ($request->isMethod('POST')) {
-            $data = $request->request->all();
+        $user = new User();
+        $form = $this->createForm(RegistrationType::class, $user);
+        $form->handleRequest($request);
 
-            if (!isset($data['email']) || !isset($data['password']) || !isset($data['username']) || !isset($data['firstName']) || !isset($data['lastName'])) {
-                return new Response('Invalid data', Response::HTTP_BAD_REQUEST);
-            }
-
-            $existingUserByEmail = $entityManager->getRepository(User::class)->findOneBy(['email' => $data['email']]);
-            $existingUserByUsername = $entityManager->getRepository(User::class)->findOneBy(['username' => $data['username']]);
+        if ($form->isSubmitted() && $form->isValid()) {
+            $existingUserByEmail = $entityManager->getRepository(User::class)->findOneBy(['email' => $user->getEmail()]);
+            $existingUserByUsername = $entityManager->getRepository(User::class)->findOneBy(['username' => $user->getUsername()]);
 
             if ($existingUserByEmail || $existingUserByUsername) {
                 return new Response('Email or Username already in use', Response::HTTP_BAD_REQUEST);
             }
 
-            $user = new User();
-            $user->setEmail($data['email']);
-            $user->setUsername($data['username']);
-            $user->setFirstName($data['firstName']);
-            $user->setLastName($data['lastName']);
             $user->setPassword(
                 $passwordHasher->hashPassword(
                     $user,
-                    $data['password']
+                    $user->getPassword()
                 )
             );
 
             $entityManager->persist($user);
             $entityManager->flush();
 
-            return $this->redirectToRoute('home'); // Redirect to home or login page after registration
+            return $this->redirectToRoute('home');
         }
 
-        return $this->render('registration/register.html.twig');
+        return $this->render('registration/register.html.twig', [
+            'form' => $form->createView(),
+        ]);
     }
 }
